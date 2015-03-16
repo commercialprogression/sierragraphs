@@ -58,7 +58,7 @@ function sierragraphs_field_default_field_instances() {
         'size' => 60,
       ),
       'type' => 'text_textfield',
-      'weight' => 11,
+      'weight' => 1,
     ),
   );
 
@@ -71,9 +71,8 @@ function sierragraphs_field_default_field_instances() {
     'display' => array(
       'default' => array(
         'label' => 'above',
-        'module' => 'text',
         'settings' => array(),
-        'type' => 'text_default',
+        'type' => 'hidden',
         'weight' => 8,
       ),
       'paragraphs_editor_preview' => array(
@@ -110,7 +109,7 @@ function sierragraphs_field_default_field_instances() {
         'size' => 60,
       ),
       'type' => 'text_textfield',
-      'weight' => 9,
+      'weight' => 6,
     ),
   );
 
@@ -123,9 +122,8 @@ function sierragraphs_field_default_field_instances() {
     'display' => array(
       'default' => array(
         'label' => 'above',
-        'module' => 'text',
         'settings' => array(),
-        'type' => 'text_default',
+        'type' => 'hidden',
         'weight' => 15,
       ),
       'paragraphs_editor_preview' => array(
@@ -162,7 +160,7 @@ function sierragraphs_field_default_field_instances() {
         'rows' => 5,
       ),
       'type' => 'text_textarea',
-      'weight' => 16,
+      'weight' => 7,
     ),
   );
 
@@ -214,7 +212,7 @@ function sierragraphs_field_default_field_instances() {
         'size' => 60,
       ),
       'type' => 'text_textfield',
-      'weight' => 14,
+      'weight' => 4,
     ),
   );
 
@@ -276,7 +274,7 @@ function sierragraphs_field_default_field_instances() {
         'progress_indicator' => 'throbber',
       ),
       'type' => 'image_image',
-      'weight' => 15,
+      'weight' => 5,
     ),
   );
 
@@ -328,7 +326,7 @@ function sierragraphs_field_default_field_instances() {
         'size' => 60,
       ),
       'type' => 'text_textfield',
-      'weight' => 12,
+      'weight' => 2,
     ),
   );
 
@@ -380,7 +378,7 @@ function sierragraphs_field_default_field_instances() {
         'rows' => 5,
       ),
       'type' => 'text_textarea',
-      'weight' => 13,
+      'weight' => 3,
     ),
   );
 
@@ -432,7 +430,7 @@ function sierragraphs_field_default_field_instances() {
         'size' => 60,
       ),
       'type' => 'text_textfield',
-      'weight' => 10,
+      'weight' => 0,
     ),
   );
 
