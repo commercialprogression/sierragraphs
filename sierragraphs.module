@@ -1,0 +1,7 @@
+<?php
+/**
+ * @file
+ * Code for the Sierragraphs feature.
+ */
+
+include_once 'sierragraphs.features.inc';
