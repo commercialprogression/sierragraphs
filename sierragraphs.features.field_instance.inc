@@ -10,9 +10,9 @@
 function sierragraphs_field_default_field_instances() {
   $field_instances = array();
 
-  // Exported field_instance: 'paragraphs_item-booklist-field_sierragraphs_author'
-  $field_instances['paragraphs_item-booklist-field_sierragraphs_author'] = array(
-    'bundle' => 'booklist',
+  // Exported field_instance: 'paragraphs_item-sierragraphs-field_sierragraphs_author'
+  $field_instances['paragraphs_item-sierragraphs-field_sierragraphs_author'] = array(
+    'bundle' => 'sierragraphs',
     'default_value' => NULL,
     'deleted' => 0,
     'description' => '',
@@ -62,9 +62,9 @@ function sierragraphs_field_default_field_instances() {
     ),
   );
 
-  // Exported field_instance: 'paragraphs_item-booklist-field_sierragraphs_bib_id'
-  $field_instances['paragraphs_item-booklist-field_sierragraphs_bib_id'] = array(
-    'bundle' => 'booklist',
+  // Exported field_instance: 'paragraphs_item-sierragraphs-field_sierragraphs_bib_id'
+  $field_instances['paragraphs_item-sierragraphs-field_sierragraphs_bib_id'] = array(
+    'bundle' => 'sierragraphs',
     'default_value' => NULL,
     'deleted' => 0,
     'description' => '',
@@ -113,9 +113,9 @@ function sierragraphs_field_default_field_instances() {
     ),
   );
 
-  // Exported field_instance: 'paragraphs_item-booklist-field_sierragraphs_data'
-  $field_instances['paragraphs_item-booklist-field_sierragraphs_data'] = array(
-    'bundle' => 'booklist',
+  // Exported field_instance: 'paragraphs_item-sierragraphs-field_sierragraphs_data'
+  $field_instances['paragraphs_item-sierragraphs-field_sierragraphs_data'] = array(
+    'bundle' => 'sierragraphs',
     'default_value' => NULL,
     'deleted' => 0,
     'description' => '',
@@ -164,9 +164,9 @@ function sierragraphs_field_default_field_instances() {
     ),
   );
 
-  // Exported field_instance: 'paragraphs_item-booklist-field_sierragraphs_isbn'
-  $field_instances['paragraphs_item-booklist-field_sierragraphs_isbn'] = array(
-    'bundle' => 'booklist',
+  // Exported field_instance: 'paragraphs_item-sierragraphs-field_sierragraphs_isbn'
+  $field_instances['paragraphs_item-sierragraphs-field_sierragraphs_isbn'] = array(
+    'bundle' => 'sierragraphs',
     'default_value' => NULL,
     'deleted' => 0,
     'description' => '',
@@ -216,9 +216,9 @@ function sierragraphs_field_default_field_instances() {
     ),
   );
 
-  // Exported field_instance: 'paragraphs_item-booklist-field_sierragraphs_jacket'
-  $field_instances['paragraphs_item-booklist-field_sierragraphs_jacket'] = array(
-    'bundle' => 'booklist',
+  // Exported field_instance: 'paragraphs_item-sierragraphs-field_sierragraphs_jacket'
+  $field_instances['paragraphs_item-sierragraphs-field_sierragraphs_jacket'] = array(
+    'bundle' => 'sierragraphs',
     'deleted' => 0,
     'description' => '',
     'display' => array(
@@ -278,9 +278,9 @@ function sierragraphs_field_default_field_instances() {
     ),
   );
 
-  // Exported field_instance: 'paragraphs_item-booklist-field_sierragraphs_material_type'
-  $field_instances['paragraphs_item-booklist-field_sierragraphs_material_type'] = array(
-    'bundle' => 'booklist',
+  // Exported field_instance: 'paragraphs_item-sierragraphs-field_sierragraphs_material_type'
+  $field_instances['paragraphs_item-sierragraphs-field_sierragraphs_material_type'] = array(
+    'bundle' => 'sierragraphs',
     'default_value' => NULL,
     'deleted' => 0,
     'description' => '',
@@ -330,9 +330,9 @@ function sierragraphs_field_default_field_instances() {
     ),
   );
 
-  // Exported field_instance: 'paragraphs_item-booklist-field_sierragraphs_summary'
-  $field_instances['paragraphs_item-booklist-field_sierragraphs_summary'] = array(
-    'bundle' => 'booklist',
+  // Exported field_instance: 'paragraphs_item-sierragraphs-field_sierragraphs_summary'
+  $field_instances['paragraphs_item-sierragraphs-field_sierragraphs_summary'] = array(
+    'bundle' => 'sierragraphs',
     'default_value' => NULL,
     'deleted' => 0,
     'description' => '',
@@ -382,9 +382,9 @@ function sierragraphs_field_default_field_instances() {
     ),
   );
 
-  // Exported field_instance: 'paragraphs_item-booklist-field_sierragraphs_title'
-  $field_instances['paragraphs_item-booklist-field_sierragraphs_title'] = array(
-    'bundle' => 'booklist',
+  // Exported field_instance: 'paragraphs_item-sierragraphs-field_sierragraphs_title'
+  $field_instances['paragraphs_item-sierragraphs-field_sierragraphs_title'] = array(
+    'bundle' => 'sierragraphs',
     'default_value' => NULL,
     'deleted' => 0,
     'description' => '',

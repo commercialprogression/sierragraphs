@@ -18,9 +18,9 @@ function sierragraphs_ctools_plugin_api($module = NULL, $api = NULL) {
  */
 function sierragraphs_paragraphs_info() {
   $items = array(
-    'booklist' => array(
-      'name' => 'Booklist',
-      'bundle' => 'booklist',
+    'sierragraphs' => array(
+      'name' => 'Sierragraphs',
+      'bundle' => 'sierragraphs',
       'locked' => '1',
     ),
   );
