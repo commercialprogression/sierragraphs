@@ -23,15 +23,6 @@ function sierragraphs_menu() {
 }
 
 /**
- * Implements hook_form_alter().
- */
-function sierragraphs_form_alter(&$form, &$form_state, $form_id) {
-  if(isset($form['field_booklist'])) {
-    array_unshift($form['actions']['submit']['#submit'], 'sierragraphs_populate_submit');
-  }
-}
-
-/**
  * Implements hook_field_widget_form_alter().
  */
 function sierragraphs_field_widget_form_alter(&$element, &$form_state, $context) {
@@ -78,46 +69,70 @@ function sierragraphs_bib_id_validate($element, &$form_state, $complete_form) {
   if (!$bib_id) {
     form_error($element, t('The bib ID field must contain a 7 digit bib number.'));
   }
-  else { // Strip value down to bib_id
+  else { // Strip value down to bib_id and populate rest of form
     form_set_value($element, array('value' => $matches[0]), $form_state);
-    sierragraphs_populate_with_data(NULL,$form_state);
+    $sierra_data = sierragraphs_populate_with_data($matches[0]);
+    if (!empty($sierra_data) && isset($sierra_data['data'])) {
+      form_set_value(set_element_parents($element, 'field_sierragraphs_data'),
+        array('value' => $sierra_data['data']), $form_state);
+      form_set_value(set_element_parents($element, 'field_sierragraphs_title'),
+        array('value' => $sierra_data['title']), $form_state);
+      form_set_value(set_element_parents($element, 'field_sierragraphs_author'),
+        array('value' => $sierra_data['author']), $form_state);
+      form_set_value(set_element_parents($element, 'field_sierragraphs_material_type'),
+        array('value' => $sierra_data['material_type']), $form_state);
+      form_set_value(set_element_parents($element, 'field_sierragraphs_isbn'),
+        array('value' => $sierra_data['isbn']), $form_state);
+      form_set_value(set_element_parents($element, 'field_sierragraphs_summary'),
+        array('value' => $sierra_data['summary']), $form_state);
+    }
+    else {
+      form_error($element, t('The bib ID has no data.'));
+    }
   }
 }
 
 /*
- * Implements hook_submit().
+ * We use this to trick form_set_value into setting the field we want
  */
-function sierragraphs_populate_submit($form, &$form_state) {
-  sierragraphs_populate_with_data($form, $form_state);
+function set_element_parents($element, $name) {
+  $element['#parents'][3] = $name;
+  return $element;
 }
 
-function sierragraphs_populate_with_data($form, &$form_state) {
-  $data = sierragraphs_get_bib_object($form_state['values']['field_booklist'][LANGUAGE_NONE][0]['field_sierragraphs_bib_id'][LANGUAGE_NONE][0]['value']);
+/*
+ * Takes the bib_id and returns an array with the fields we care about
+ */
+function sierragraphs_populate_with_data($bib_id) {
+  $data = sierragraphs_get_bib_object($bib_id);
+  $sierra_data = array();
 
-  $form_state['values']['field_booklist'][LANGUAGE_NONE][0]['field_sierragraphs_data'][LANGUAGE_NONE][0]['value'] = json_encode($data);
-  $form_state['values']['field_booklist'][LANGUAGE_NONE][0]['field_sierragraphs_title'][LANGUAGE_NONE][0]['value'] = $data->title;
-  $form_state['values']['field_booklist'][LANGUAGE_NONE][0]['field_sierragraphs_author'][LANGUAGE_NONE][0]['value'] = sierragraphs_format_author($data->author);
-  $form_state['values']['field_booklist'][LANGUAGE_NONE][0]['field_sierragraphs_material_type'][LANGUAGE_NONE][0]['value'] = $data->materialType->value;
+  if (!empty($data) && isset($data->title) && isset($data->author) && isset($data->materialType->value)) {
+    $sierra_data['data'] = json_encode($data);
+    $sierra_data['title'] = $data->title;
+    $sierra_data['author'] = sierragraphs_format_author($data->author);
+    $sierra_data['material_type'] = $data->materialType->value;
 
-  foreach($data->varFields as $field) {
-    if(isset($field->marcTag)) {
-      if ($field->marcTag == '020') {
-        foreach ($field->subfields as $sub) {
-          if ($sub->tag == 'a') {
-            $form_state['values']['field_booklist'][LANGUAGE_NONE][0]['field_sierragraphs_isbn'][LANGUAGE_NONE][0]['value'] = $sub->content;
+    foreach ($data->varFields as $field) {
+      if (isset($field->marcTag)) {
+        if ($field->marcTag == '020') {
+          foreach ($field->subfields as $sub) {
+            if ($sub->tag == 'a') {
+              $sierra_data['isbn'] = $sub->content;
+            }
           }
-        }
-      }
-      elseif ($field->marcTag == '520') {
-        foreach ($field->subfields as $sub) {
-          if ($sub->tag == 'a') {
-            $form_state['values']['field_booklist'][LANGUAGE_NONE][0]['field_sierragraphs_summary'][LANGUAGE_NONE][0]['value'] = $sub->content;
+        } elseif ($field->marcTag == '520') {
+          foreach ($field->subfields as $sub) {
+            if ($sub->tag == 'a') {
+              $sierra_data['summary'] = $sub->content;
+            }
           }
         }
       }
     }
   }
 
+  return $sierra_data;
 }
 
 /*
@@ -126,7 +141,11 @@ function sierragraphs_populate_with_data($form, &$form_state) {
 function sierragraphs_get_bib_object($bib_id) {
   module_load_include('inc', 'sierragraphs', 'sierragraphs.admin');
   // This URL queries Sierra with the default fields + all variable fields
-  $url = 'https://' . variable_get('sierragraphs_auth_host', '') . '/iii/sierra-api/v1/bibs/' . $bib_id . '?fields=default,varFields';
+  $host = variable_get('sierragraphs_auth_host', '');
+  if (empty($host)) {
+    return array();
+  }
+  $url = 'https://' . $host . '/iii/sierra-api/v1/bibs/' . $bib_id . '?fields=default,varFields';
 
   $token = sierragraphs_auth_token();
   $headers = array(
@@ -143,7 +162,7 @@ function sierragraphs_get_bib_object($bib_id) {
  * Does string reordering on the author returned from Sierra
  */
 function sierragraphs_format_author($author = '') {
-  if(strpos('author', ',') !== FALSE ) {
+  if(strpos($author, ',') !== FALSE ) {
     $author_array = explode(',', $author);
     $author = '';
     foreach($author_array as $a) {

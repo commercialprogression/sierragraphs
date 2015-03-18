@@ -58,15 +58,14 @@ function sierragraphs_settings_form_validate($form, &$form_state) {
     $valid = FALSE;
   }
   if($valid) {
-    sierragraphs_get_auth_token();
+    sierragraphs_get_auth_token($form_state['values']['sierragraphs_auth_client_id'],
+      $form_state['values']['sierragraphs_auth_client_secret'], $form_state['values']['sierragraphs_auth_host']);
   }
 
 }
 
-function sierragraphs_get_auth_token() {
-  $url = 'https://' . variable_get('sierragraphs_auth_host', '') . '/iii/sierra-api/v1/token';
-  $client_id = variable_get('sierragraphs_auth_client_id', '');
-  $client_secret = variable_get('sierragraphs_auth_client_secret', '');
+function sierragraphs_get_auth_token($client_id, $client_secret, $host) {
+  $url = 'https://' . (empty($host) ? variable_get('sierragraphs_auth_host', '') : $host) . '/iii/sierra-api/v1/token';
 
   if (!empty($client_id) && !empty($client_secret)) {
     $credentials = base64_encode($client_id . ':' . $client_secret);
@@ -84,17 +83,16 @@ function sierragraphs_get_auth_token() {
     if($response->code == "200") {
       $json_response = json_decode($response->data);
       cache_set($credentials, $json_response->access_token, 'cache', REQUEST_TIME + $json_response->expires_in);
-      drupal_set_message(t('You have been successfully authenticated in Sierra'));
-      drupal_goto('admin/config/system/sierragraphs');
+      if($_POST['form_id'] == 'sierragraphs_auth_admin_settings') {
+        drupal_set_message(t('You have been successfully authenticated in Sierra'));
+      }
     }
     else {
-      drupal_set_message(t('Something went wrong - double check your client key, client secret, and host.'), "error");
-      drupal_goto('admin/config/system/sierragraphs');
+      drupal_set_message(t('Something went wrong - double check your Sierra client key, client secret, and host.'), "error");
     }
   }
   else {
     drupal_set_message(t('You must enter a client key and a client secret.'), "error");
-    drupal_goto('admin/config/system/sierragraphs');
   }
 }
 
@@ -112,7 +110,7 @@ function sierragraphs_auth_token($reset = FALSE) {
       $token = $auth_var->data;
     }
     else {
-      sierragraphs_get_auth_token();
+      sierragraphs_get_auth_token($client_id, $client_secret, '');
       $auth_var = cache_get($credentials, 'cache');
       $token = $auth_var->data;
     }
