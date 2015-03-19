@@ -73,13 +73,11 @@ function sierragraphs_bib_id_validate($element, &$form_state, $complete_form) {
     sierragraphs_set_value($form_state, $element, 'bib_id', 'value', $matches[0]);
     $sierra_data = sierragraphs_populate_with_data($matches[0]);
     if (!empty($sierra_data) && isset($sierra_data['data'])) {
-      sierragraphs_set_value($form_state, $element, 'data', 'value', $sierra_data['data']);
-      sierragraphs_set_value($form_state, $element, 'title', 'value', $sierra_data['title']);
-      sierragraphs_set_value($form_state, $element, 'author', 'value', $sierra_data['author']);
-      sierragraphs_set_value($form_state, $element, 'material_type', 'value', $sierra_data['material_type']);
-      sierragraphs_set_value($form_state, $element, 'isbn','value',  $sierra_data['isbn']);
-      sierragraphs_set_value($form_state, $element, 'summary', 'value', $sierra_data['summary']);
-      sierragraphs_set_value($form_state, $element, 'jacket', 'fid', sierragraphs_get_jacket($sierra_data['isbn']));
+      $sierragraphs_fields = array('data', 'title', 'author', 'summary', 'material_type', 'isbn');
+      foreach($sierragraphs_fields as $field) {
+        sierragraphs_set_value($form_state, $element, $field, 'value', $sierra_data);
+      }
+      sierragraphs_set_value($form_state, $element, 'jacket', 'fid', $sierra_data);
     }
     else {
       form_error($element, t('The bib ID has no data.'));
@@ -90,9 +88,15 @@ function sierragraphs_bib_id_validate($element, &$form_state, $complete_form) {
 /*
  * Generic function for form_set_value
  */
-function sierragraphs_set_value(&$form_state, $element, $name, $property, $value) {
-  form_set_value(sierragraphs_set_element_parents($element, 'field_sierragraphs_'.$name),
-    array($property => $value), $form_state);
+function sierragraphs_set_value(&$form_state, $element, $name, $property, $sierra_data) {
+  if(isset($sierra_data[$name]) && $property != 'fid') {
+    form_set_value(sierragraphs_set_element_parents($element, 'field_sierragraphs_' . $name),
+      array($property => $sierra_data[$name]), $form_state);
+  }
+  elseif($property == 'fid' && isset($sierra_data['isbn'])) {
+    form_set_value(sierragraphs_set_element_parents($element, 'field_sierragraphs_' . $name),
+      array($property => sierragraphs_get_jacket($sierra_data['isbn'])), $form_state);
+  }
 }
 
 /*
