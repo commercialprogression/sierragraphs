@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Form for Sierra API auth and other settings.
+ * Form for Sierra API auth.
  */
 function sierragraphs_auth_admin_settings() {
   // Get Sierra API settings.
@@ -64,7 +64,7 @@ function sierragraphs_settings_form_validate($form, &$form_state) {
 
 }
 
-function sierragraphs_get_auth_token($client_id, $client_secret, $host) {
+function sierragraphs_get_auth_token($client_id, $client_secret, $host = '') {
   $url = 'https://' . (empty($host) ? variable_get('sierragraphs_auth_host', '') : $host) . '/iii/sierra-api/v1/token';
 
   if (!empty($client_id) && !empty($client_secret)) {
@@ -109,8 +109,8 @@ function sierragraphs_auth_token($reset = FALSE) {
     if (isset($auth_var->data) && time() < $auth_var->expire) {
       $token = $auth_var->data;
     }
-    else {
-      sierragraphs_get_auth_token($client_id, $client_secret, '');
+    else { // Refresh cache table
+      sierragraphs_get_auth_token($client_id, $client_secret);
       $auth_var = cache_get($credentials, 'cache');
       $token = $auth_var->data;
     }

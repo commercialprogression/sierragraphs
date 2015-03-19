@@ -70,21 +70,16 @@ function sierragraphs_bib_id_validate($element, &$form_state, $complete_form) {
     form_error($element, t('The bib ID field must contain a 7 digit bib number.'));
   }
   else { // Strip value down to bib_id and populate rest of form
-    form_set_value($element, array('value' => $matches[0]), $form_state);
+    sierragraphs_set_value($form_state, $element, 'bib_id', 'value', $matches[0]);
     $sierra_data = sierragraphs_populate_with_data($matches[0]);
     if (!empty($sierra_data) && isset($sierra_data['data'])) {
-      form_set_value(set_element_parents($element, 'field_sierragraphs_data'),
-        array('value' => $sierra_data['data']), $form_state);
-      form_set_value(set_element_parents($element, 'field_sierragraphs_title'),
-        array('value' => $sierra_data['title']), $form_state);
-      form_set_value(set_element_parents($element, 'field_sierragraphs_author'),
-        array('value' => $sierra_data['author']), $form_state);
-      form_set_value(set_element_parents($element, 'field_sierragraphs_material_type'),
-        array('value' => $sierra_data['material_type']), $form_state);
-      form_set_value(set_element_parents($element, 'field_sierragraphs_isbn'),
-        array('value' => $sierra_data['isbn']), $form_state);
-      form_set_value(set_element_parents($element, 'field_sierragraphs_summary'),
-        array('value' => $sierra_data['summary']), $form_state);
+      sierragraphs_set_value($form_state, $element, 'data', 'value', $sierra_data['data']);
+      sierragraphs_set_value($form_state, $element, 'title', 'value', $sierra_data['title']);
+      sierragraphs_set_value($form_state, $element, 'author', 'value', $sierra_data['author']);
+      sierragraphs_set_value($form_state, $element, 'material_type', 'value', $sierra_data['material_type']);
+      sierragraphs_set_value($form_state, $element, 'isbn','value',  $sierra_data['isbn']);
+      sierragraphs_set_value($form_state, $element, 'summary', 'value', $sierra_data['summary']);
+      sierragraphs_set_value($form_state, $element, 'jacket', 'fid', sierragraphs_get_jacket($sierra_data['isbn']));
     }
     else {
       form_error($element, t('The bib ID has no data.'));
@@ -93,9 +88,17 @@ function sierragraphs_bib_id_validate($element, &$form_state, $complete_form) {
 }
 
 /*
+ * Generic function for form_set_value
+ */
+function sierragraphs_set_value(&$form_state, $element, $name, $property, $value) {
+  form_set_value(sierragraphs_set_element_parents($element, 'field_sierragraphs_'.$name),
+    array($property => $value), $form_state);
+}
+
+/*
  * We use this to trick form_set_value into setting the field we want
  */
-function set_element_parents($element, $name) {
+function sierragraphs_set_element_parents($element, $name) {
   $element['#parents'][3] = $name;
   return $element;
 }
@@ -115,15 +118,16 @@ function sierragraphs_populate_with_data($bib_id) {
 
     foreach ($data->varFields as $field) {
       if (isset($field->marcTag)) {
-        if ($field->marcTag == '020') {
+        if ($field->marcTag == '020' && isset($field->subfields)) {
           foreach ($field->subfields as $sub) {
-            if ($sub->tag == 'a') {
+            if (isset($sub->tag) && $sub->tag == 'a') {
               $sierra_data['isbn'] = $sub->content;
             }
           }
-        } elseif ($field->marcTag == '520') {
+        }
+        elseif ($field->marcTag == '520' && isset($field->subfields)) {
           foreach ($field->subfields as $sub) {
-            if ($sub->tag == 'a') {
+            if (isset($sub->tag) && $sub->tag == 'a') {
               $sierra_data['summary'] = $sub->content;
             }
           }
@@ -140,11 +144,12 @@ function sierragraphs_populate_with_data($bib_id) {
  */
 function sierragraphs_get_bib_object($bib_id) {
   module_load_include('inc', 'sierragraphs', 'sierragraphs.admin');
-  // This URL queries Sierra with the default fields + all variable fields
+
   $host = variable_get('sierragraphs_auth_host', '');
   if (empty($host)) {
     return array();
   }
+  // This URL queries Sierra with the default fields + all variable fields
   $url = 'https://' . $host . '/iii/sierra-api/v1/bibs/' . $bib_id . '?fields=default,varFields';
 
   $token = sierragraphs_auth_token();
@@ -152,9 +157,7 @@ function sierragraphs_get_bib_object($bib_id) {
     'Authorization' => 'Bearer ' . $token,
   );
   $options = array('headers' => $headers);
-
   $response = drupal_http_request($url, $options);
-
   return json_decode($response->data);
 }
 
@@ -170,4 +173,20 @@ function sierragraphs_format_author($author = '') {
     }
   }
   return trim($author);
+}
+
+/*
+ * Queries Syndetics for our jacket image, saves it, and returns the fid
+ */
+function sierragraphs_get_jacket($isbn) {
+  $dest = trim($isbn) . '.jpg';
+  $syndetics_url = 'http://www.syndetics.com/index.aspx?client=CANT&isbn=' . trim($isbn) . '/LC.jpg';
+  $image = @file_get_contents($syndetics_url);
+  if (strlen($image) > 2000) {
+    $filename = file_save_data($image, 'public://'.$dest);
+    return $filename->fid;
+  }
+  else {
+    return FALSE;
+  }
 }
