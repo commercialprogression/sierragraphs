@@ -188,6 +188,9 @@ function sierragraphs_get_jacket($isbn) {
   $image = @file_get_contents($syndetics_url);
   if (strlen($image) > 2000) {
     $filename = file_save_data($image, 'public://'.$dest);
+    // We need to set the record in the file usage table if we are importing moe than 1 book
+    // The last parameter should be the node id, but we don't have one
+    file_usage_add($filename, 'node', 'node', $filename->fid);
     return $filename->fid;
   }
   else {
