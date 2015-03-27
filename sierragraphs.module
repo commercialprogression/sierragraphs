@@ -26,8 +26,11 @@ function sierragraphs_menu() {
  * Implements hook_field_widget_form_alter().
  */
 function sierragraphs_field_widget_form_alter(&$element, &$form_state, $context) {
-  // Hide certain fields during node create
-  if(!isset($form_state['node']->nid)) {
+  // Hide certain fields during node create, or during add more button on node edit
+  if(!isset($form_state['node']->nid) ||
+      (((isset($element['value']['#entity']->is_new) && $element['value']['#entity']->is_new) ||
+      ((isset($element[0]['#entity']->is_new) && $element[0]['#entity']->is_new))) &&
+      (isset($form_state['clicked_button']) && strpos($form_state['clicked_button']['#name'], '_add_more') !== FALSE))) {
     if(isset($element['#field_name'])) {
       $sierragraphs_fields = array('title', 'author', 'summary', 'material_type', 'isbn', 'data');
       hide_sierragraphs_fields($element, $sierragraphs_fields);
@@ -70,7 +73,7 @@ function sierragraphs_bib_id_validate($element, &$form_state, $complete_form) {
     form_error($element, t('The bib ID field must contain a 7 digit bib number.'));
   }
   else { // Strip value down to bib_id and populate rest of form
-    sierragraphs_set_value($form_state, $element, 'bib_id', 'value', $matches[0]);
+    form_set_value($element, array('value' => $matches[0]), $form_state);
     $sierra_data = sierragraphs_populate_with_data($matches[0]);
     if (!empty($sierra_data) && isset($sierra_data['data'])) {
       $sierragraphs_fields = array('data', 'title', 'author', 'summary', 'material_type', 'isbn');
@@ -117,7 +120,6 @@ function sierragraphs_populate_with_data($bib_id) {
   if (!empty($data) && isset($data->title) && isset($data->author) && isset($data->materialType->value)) {
     $sierra_data['data'] = json_encode($data);
     $sierra_data['title'] = $data->title;
-    $sierra_data['author'] = sierragraphs_format_author($data->author);
     $sierra_data['material_type'] = $data->materialType->value;
 
     foreach ($data->varFields as $field) {
@@ -126,6 +128,7 @@ function sierragraphs_populate_with_data($bib_id) {
           foreach ($field->subfields as $sub) {
             if (isset($sub->tag) && $sub->tag == 'a') {
               $sierra_data['isbn'] = $sub->content;
+              break;
             }
           }
         }
@@ -133,6 +136,15 @@ function sierragraphs_populate_with_data($bib_id) {
           foreach ($field->subfields as $sub) {
             if (isset($sub->tag) && $sub->tag == 'a') {
               $sierra_data['summary'] = $sub->content;
+              break;
+            }
+          }
+        }
+        elseif ($field->marcTag == '100' && isset($field->subfields)) {
+          foreach ($field->subfields as $sub) {
+            if (isset($sub->tag) && $sub->tag =='a') {
+              $sierra_data['author'] = sierragraphs_format_author($sub->content);
+              break;
             }
           }
         }
@@ -188,12 +200,30 @@ function sierragraphs_get_jacket($isbn) {
   $image = @file_get_contents($syndetics_url);
   if (strlen($image) > 2000) {
     $filename = file_save_data($image, 'public://'.$dest);
-    // We need to set the record in the file usage table if we are importing moe than 1 book
+    // We need to set the record in the file usage table if we are importing more than 1 book
     // The last parameter should be the node id, but we don't have one
     file_usage_add($filename, 'node', 'node', $filename->fid);
     return $filename->fid;
   }
   else {
     return FALSE;
+  }
+}
+
+/**
+ * Implements hook_preprocess_field().
+ */
+function sierragraphs_preprocess_field(&$variables, $hook) {
+  if ($variables['element']['#field_name'] == 'field_sierragraphs_title' &&
+      !empty($host = variable_get('sierragraphs_auth_host', ''))) {
+    if (isset($variables['element']['#object']->field_sierragraphs_bib_id[LANGUAGE_NONE][0]['value'])) {
+
+      $bib_id = $variables['element']['#object']->field_sierragraphs_bib_id[LANGUAGE_NONE][0]['value'];
+      // If somehow bib ID wasn't saved as just a number, strip it back out
+      preg_match('/[0-9]{7}/', $bib_id, $matches);
+
+      $variables['items'][0]['#markup'] =
+        l($variables['items'][0]['#markup'], 'http://' . $host . '/record=b' . $matches[0]);
+    }
   }
 }
