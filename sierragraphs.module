@@ -223,7 +223,8 @@ function sierragraphs_preprocess_field(&$variables, $hook) {
       preg_match('/[0-9]{7}/', $bib_id, $matches);
 
       $variables['items'][0]['#markup'] =
-        l($variables['items'][0]['#markup'], 'http://' . $host . '/record=b' . $matches[0]);
+        l(htmlspecialchars_decode($variables['items'][0]['#markup'],ENT_QUOTES),
+        'http://' . $host . '/record=b' . $matches[0]);
     }
   }
 }
